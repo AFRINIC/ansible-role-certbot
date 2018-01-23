@@ -5,4 +5,5 @@
     job: "{{ certbot_script }} renew {{ certbot_auto_renew_options }}"
     minute: "{{ certbot_auto_renew_minute }}"
     hour: "{{ certbot_auto_renew_hour }}"
+    weekday: "{{ certbot_auto_renew_weekday }}"
     user: "{{ certbot_auto_renew_user }}"

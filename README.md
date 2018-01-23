@@ -1,7 +1,5 @@
 # Ansible Role: Certbot (for Let's Encrypt)
 
-[![Build Status](https://travis-ci.org/geerlingguy/ansible-role-certbot.svg?branch=master)](https://travis-ci.org/geerlingguy/ansible-role-certbot)
-
 Installs and configures Certbot (for Let's Encrypt).
 
 ## Requirements
@@ -15,21 +13,20 @@ Generally, installing from source (see section `Source Installation from Git`) l
 The variable `certbot_install_from_source` controls whether to install Certbot from Git or package management. The latter is the default, so the variable defaults to `no`.
 
     certbot_auto_renew: true
-    certbot_auto_renew_user: "{{ ansible_user }}"
-    certbot_auto_renew_hour: 3
+    certbot_auto_renew_user: "apache"
+    certbot_auto_renew_hour: 4
     certbot_auto_renew_minute: 30
+    certbot_auto_renew_weekday: 6
     certbot_auto_renew_options: "--quiet --no-self-upgrade"
 
-By default, this role configures a cron job to run under the provided user account at the given hour and minute, every day. The defaults run `certbot renew` (or `certbot-auto renew`) via cron every day at 03:30:00 by the user you use in your Ansible playbook. It's preferred that you set a custom user/hour/minute so the renewal is during a low-traffic period and done by a non-root user account.
+By default, this role configures a cron job to run under the provided user account at the given hour and minute, every day. The defaults run `certbot renew` (or `certbot-auto renew`) via cron every week at 04:30:00, on a Saturday, by the user you use in your Ansible playbook. It's preferred that you set a custom user/hour/minute/weekday so the renewal is during a low-traffic period and done by a non-root user account.
 
 ### Automatic Certificate Generation
 
-Currently there is one built-in method for generating new certificates using this role: `standalone`. Other methods (e.g. using nginx or apache and a webroot) may be added in the future.
+Currently there is one built-in method for generating new certificates using this role: `apache`. This has been modified from the original role this is based on where ther only method was previously `standalone`. (This may be modified further in future to allow both to work, and/or other methods like nginx.)
 
-**For a complete example**: see the fully functional test playbook in [tests/test-standalone-nginx-aws.yml](tests/test-standalone-nginx-aws.yml).
-
-    certbot_create_if_missing: no
-    certbot_create_method: standalone
+    certbot_create_if_missing: yes
+    certbot_create_method: apache
 
 Set `certbot_create_if_missing` to `yes` or `True` to let this role generate certs. Set the method used for generating certs with the `certbot_create_method` variable—current allowed values include: `standalone`.
 
@@ -47,18 +44,19 @@ The email address used to agree to Let's Encrypt's TOS and subscribe to cert-rel
 
 A list of domains (and other data) for which certs should be generated. You can add an `email` key to any list item to override the `certbot_admin_email`.
 
-    certbot_create_command: "{{ certbot_script }} certonly --standalone --noninteractive --agree-tos --email {{ cert_item.email | default(certbot_admin_email) }} -d {{ cert_item.domains | join(',') }}"
+    certbot_create_command: "{{ certbot_script }} certonly --apache --noninteractive --agree-tos --email {{ cert_item.email | default(certbot_admin_email) }} -d {{ cert_item.domains | join(',') }}"
 
 The `certbot_create_command` defines the command used to generate the cert.
 
 #### Standalone Certificate Generation
 
-    certbot_create_standalone_stop_services:
-      - nginx
+    certbot_create_standalone_stop_services: []
 
 Services that should be stopped while `certbot` runs it's own standalone server on ports 80 and 443. If you're running Apache, set this to `apache2` (Ubuntu), or `httpd` (RHEL), or if you have Nginx on port 443 and something else on port 80 (e.g. Varnish, a Java app, or something else), add it to the list so it is stopped when the certificate is generated.
 
 These services will only be stopped the first time a new cert is generated.
+
+*This is not currently used at all with the `apache` method.*
 
 ### Source Installation from Git
 
@@ -89,7 +87,7 @@ None.
         certbot_auto_renew_hour: 5
     
       roles:
-        - geerlingguy.certbot
+        - afrinic.certbot
 
 See other examples in the `tests/` directory.
 
@@ -117,7 +115,7 @@ If you want to fully automate the process of adding a new certificate, but don't
 
 ### Certbot certificate auto-renewal
 
-By default, this role adds a cron job that will renew all installed certificates once per day at the hour and minute of your choosing.
+By default, this role adds a cron job that will renew all installed certificates once per week at the day of the week, hour and minute of your choosing.
 
 You can test the auto-renewal (without actually renewing the cert) with the command:
 
@@ -131,4 +129,6 @@ MIT / BSD
 
 ## Author Information
 
-This role was created in 2016 by [Jeff Geerling](https://www.jeffgeerling.com/), author of [Ansible for DevOps](https://www.ansiblefordevops.com/).
+This role was first created in 2016 by [Jeff Geerling](https://www.jeffgeerling.com/), author of [Ansible for DevOps](https://www.ansiblefordevops.com/).
+
+Forked and updated in 2018 by Daniel Shaw @ AFRINIC.

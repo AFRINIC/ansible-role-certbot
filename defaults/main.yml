@@ -1,15 +1,17 @@
 ---
 # Certbot auto-renew cron job configuration (for certificate renewals).
 certbot_auto_renew: true
-certbot_auto_renew_user: "{{ ansible_user }}"
-certbot_auto_renew_hour: 3
+#certbot_auto_renew_user: "{{ ansible_user }}"
+certbot_auto_renew_user: "apache"
+certbot_auto_renew_hour: 4
 certbot_auto_renew_minute: 30
+certbot_auto_renew_weekday: 6
 certbot_auto_renew_options: "--quiet --no-self-upgrade"
 
 # Parameters used when creating new Certbot certs.
-certbot_create_if_missing: no
-certbot_create_method: standalone
-certbot_admin_email: email@example.com
+certbot_create_if_missing: yes
+certbot_create_method: apache
+certbot_admin_email: email@domain.tld
 certbot_certs: []
   # - email: janedoe@example.com
   #   domains:
@@ -17,9 +19,9 @@ certbot_certs: []
   #     - example2.com
   # - domains:
   #     - example3.com
-certbot_create_command: "{{ certbot_script }} certonly --standalone --noninteractive --agree-tos --email {{ cert_item.email | default(certbot_admin_email) }} -d {{ cert_item.domains | join(',') }}"
-certbot_create_standalone_stop_services:
-  - nginx
+certbot_create_command: "{{ certbot_script }} certonly --apache --noninteractive --agree-tos --email {{ cert_item.email | default(certbot_admin_email) }} -d {{ cert_item.domains | join(',') }}"
+#certbot_create_standalone_stop_services:
+  #- nginx
   # - apache
   # - varnish
 

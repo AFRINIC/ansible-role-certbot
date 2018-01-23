@@ -1,2 +1,4 @@
 ---
-certbot_package: certbot
+certbot_packages:
+    - certbot
+    - python-certbot-apache
