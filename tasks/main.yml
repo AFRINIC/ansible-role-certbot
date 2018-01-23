@@ -7,11 +7,11 @@
 - import_tasks: install-from-source.yml
   when: certbot_install_from_source
 
-- include_tasks: create-cert-standalone.yml
+- include_tasks: create-cert.yml
   with_items: "{{ certbot_certs }}"
   when:
     - certbot_create_if_missing
-    - certbot_create_method == 'standalone'
+#    - certbot_create_method == 'standalone'
   loop_control:
     loop_var: cert_item
 

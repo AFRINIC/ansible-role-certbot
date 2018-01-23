@@ -2,8 +2,13 @@
 - name: Add cron job for certbot renewal (if configured).
   cron:
     name: Certbot automatic renewal.
-    job: "{{ certbot_script }} renew {{ certbot_auto_renew_options }}"
+    job: "{{ certbot_script }} renew {{ certbot_auto_renew_options }} >> {{ certbot_auto_renew_log }}"
     minute: "{{ certbot_auto_renew_minute }}"
     hour: "{{ certbot_auto_renew_hour }}"
     weekday: "{{ certbot_auto_renew_weekday }}"
     user: "{{ certbot_auto_renew_user }}"
+
+- name: Logrotation for renewal log.
+  template:
+    src: logrotate-certbot.j2
+    dest: /etc/logrotate.d/certbot
